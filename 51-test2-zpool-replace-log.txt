@@ -1,0 +1,42 @@
+TEST 2 - Disk failure and replacement (TrueNAS 25.10.8, pool "tank", 2-disk mirror)
+Date: Fri Nov 20 2026 (times shown in TrueNAS Pacific time)
+
+--- During the failure (disk offlined by administrator) ---
+  pool: tank
+ state: DEGRADED
+status: One or more devices has been taken offline by the administrator.
+        Sufficient replicas exist for the pool to continue functioning in a
+        degraded state.
+        NAME                                      STATE     READ WRITE CKSUM
+        tank                                      DEGRADED     0     0     0
+          mirror-0                                DEGRADED     0     0     0
+            3481b974-c1e2-4b7d-9ec8-b86daf7eb387  OFFLINE      0     0     0
+            aaf1a38e-12d2-4293-8320-93de15480ae7  ONLINE       0     0     0
+errors: No known data errors
+
+--- Replacement command (UI/API would not select the virtual spare, so native ZFS was used) ---
+sudo zpool replace tank 3481b974-c1e2-4b7d-9ec8-b86daf7eb387 /dev/sdd
+
+--- Resilver in progress ---
+  scan: resilver in progress since Fri Nov 20 16:47:01 2026
+        6.50G / 6.50G scanned, 3.58G / 6.50G issued at 459M/s
+        3.58G resilvered, 55.18% done, 00:00:06 to go
+            replacing-0                             DEGRADED     0     0     0
+              3481b974-c1e2-4b7d-9ec8-b86daf7eb387  OFFLINE      0     0     0
+              sdd                                   ONLINE       0     0     0  (resilvering)
+            aaf1a38e-12d2-4293-8320-93de15480ae7    ONLINE       0     0     0
+errors: No known data errors
+
+--- After ---
+  pool: tank
+ state: ONLINE
+  scan: resilvered 6.53G in 00:00:13 with 0 errors on Fri Nov 20 16:47:14 2026
+        NAME                                      STATE     READ WRITE CKSUM
+        tank                                      ONLINE       0     0     0
+          mirror-0                                ONLINE       0     0     0
+            sdd                                   ONLINE       0     0     0
+            aaf1a38e-12d2-4293-8320-93de15480ae7  ONLINE       0     0     0
+errors: No known data errors
+
+During the whole test, app01 (on iscsi-ds) kept answering ping with 0 loss
+and its heartbeat log (date every 2s) had no gaps.
