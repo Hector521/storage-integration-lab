@@ -2,7 +2,7 @@
 
 **How I built, broke and recovered shared storage, and what I’d do for a client.**
 
-I built this home lab in November 2026 to get hands-on with storage and VMware for an Associate Storage/Systems Engineer role. Everything runs on one laptop: a TrueNAS storage server shares storage to a VMware ESXi host over **NFS** (file) and **iSCSI** (block), and an Ubuntu server runs on that shared storage. Then I tested it on purpose: I undid a bad change with a snapshot, and I failed a disk while the server kept running.
+I built this home lab in November 2026 to get hands-on with storage and VMware. Everything runs on one laptop: a TrueNAS storage server shares storage to a VMware ESXi host over **NFS** (file) and **iSCSI** (block), and an Ubuntu server runs on that shared storage. Then I tested it on purpose: I undid a bad change with a snapshot, and I failed a disk while the server kept running.
 
 > No passwords, keys or installers are stored in this repo. Download links for the software are below.
 
