@@ -48,6 +48,8 @@ flowchart TB
   end
 ```
 
+*The diagram shows the setup before Test 2. During that test, the spare `sdd` replaced the failed `sdb` in the mirror, so the mirror is now `sdc` + `sdd`, and `sdb` is the free disk.*
+
 | Machine | IP | Software | Resources |
 |---|---|---|---|
 | truenas01 | 192.168.136.10 | TrueNAS Community 25.10.8 “Goldeye” | 2 vCPU · 8 GB RAM · 32 GB boot disk + three 60 GB data disks |
