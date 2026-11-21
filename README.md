@@ -1,6 +1,8 @@
 # Storage Integration Lab: iSCSI and NFS Datastores on VMware ESXi
 
-**How I built, broke and recovered shared storage, and what I’d do for a client.**
+**How I built, broke and recovered shared storage, and what I’d do for a client.** 
+
+**Why it matters:** Companies run their applications on virtual machines, and those VMs need storage that keeps working when hardware fails. If a VM's files sit on one server's own disks, a single dead server or disk can take the application down. Shared storage, protected against disk failure, is how teams avoid that. So I built a small version of it and tested it.
 
 I built this home lab in November 2026 to get hands-on with storage and VMware. Everything runs on one laptop: a TrueNAS storage server shares storage to a VMware ESXi host over **NFS** (file) and **iSCSI** (block), and an Ubuntu server runs on that shared storage. Then I tested it on purpose: I undid a bad change with a snapshot, and I failed a disk while the server kept running.
 
