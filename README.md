@@ -4,6 +4,8 @@
 
 I built this home lab in November 2026 to get hands-on with storage and VMware. Everything runs on one laptop: a TrueNAS storage server shares storage to a VMware ESXi host over **NFS** (file) and **iSCSI** (block), and an Ubuntu server runs on that shared storage. Then I tested it on purpose: I undid a bad change with a snapshot, and I failed a disk while the server kept running.
 
+**Skills demonstrated:** VMware ESXi · TrueNAS/ZFS · iSCSI · NFS · VMFS · RAID 1 mirroring · VM snapshots · disk failure recovery · Linux · troubleshooting
+
 > No passwords, keys or installers are stored in this repo. Download links for the software are below.
 
 ---
@@ -53,7 +55,7 @@ flowchart TB
 
 **Host:** Lenovo laptop, Intel Core Ultra 9 185H, 32 GB RAM, Windows 11, VMware Workstation Pro 17.6.2.
 
-![Three datastores on the ESXi host](30-esxi-three-datastores.png)
+![Three datastores on the ESXi host](screenshots/30-esxi-three-datastores.png)
 
 ---
 
@@ -64,11 +66,11 @@ I built one layer at a time and proved each layer worked before building the nex
 | Step | What I did | Proof |
 |---|---|---|
 | 1. Plan | IP plan, RAM sizing for a 32 GB laptop, official installers | |
-| 2. ESXi | Installed nested ESXi, set a static IP, booted a test VM to prove nested virtualization works | [installed](01-esxi-installed.png) · [static IP](02-esxi-static-ip.png) · [test VM boots](07-test01-nested-boot.png) |
-| 3. TrueNAS | Installed TrueNAS, set a static IP, built pool `tank` as a 2-disk mirror with a third disk kept as a spare | [dashboard](14-truenas-dashboard.png) · [static IP](17-truenas-static-ip.png) · [pool healthy](21-storage-dashboard-tank.png) |
-| 4. NFS | Dataset `tank/vms-nfs`, NFS share with maproot = root, access limited to the ESXi host’s IP, mounted in ESXi as `nfs-ds` (NFS 3) | [share running](24-nfs-share-running.png) · [mounted](25-esxi-nfs-ds-mounted.png) |
-| 5. iSCSI | 30 GiB sparse zvol, iSCSI target on port 3260, ESXi software iSCSI adapter with dynamic discovery, formatted as VMFS6 `iscsi-ds` | [target running](28-iscsi-running.png) · [ESXi sees the disk](29-esxi-iscsi-device.png) |
-| 6. app01 | Uploaded the Ubuntu ISO to `nfs-ds`, installed app01 onto `iscsi-ds`, static IP, OpenSSH, logged in over SSH | [SSH login](41a-app01-ssh-login.png) · [disk layout](41b-app01-lsblk-df.png) |
+| 2. ESXi | Installed nested ESXi, set a static IP, booted a test VM to prove nested virtualization works | [installed](screenshots/01-esxi-installed.png) · [static IP](screenshots/02-esxi-static-ip.png) · [test VM boots](screenshots/07-test01-nested-boot.png) |
+| 3. TrueNAS | Installed TrueNAS, set a static IP, built pool `tank` as a 2-disk mirror with a third disk kept as a spare | [dashboard](screenshots/14-truenas-dashboard.png) · [static IP](screenshots/17-truenas-static-ip.png) · [pool healthy](screenshots/21-storage-dashboard-tank.png) |
+| 4. NFS | Dataset `tank/vms-nfs`, NFS share with maproot = root, access limited to the ESXi host’s IP, mounted in ESXi as `nfs-ds` (NFS 3) | [share running](screenshots/24-nfs-share-running.png) · [mounted](screenshots/25-esxi-nfs-ds-mounted.png) |
+| 5. iSCSI | 30 GiB sparse zvol, iSCSI target on port 3260, ESXi software iSCSI adapter with dynamic discovery, formatted as VMFS6 `iscsi-ds` | [target running](screenshots/28-iscsi-running.png) · [ESXi sees the disk](screenshots/29-esxi-iscsi-device.png) |
+| 6. app01 | Uploaded the Ubuntu ISO to `nfs-ds`, installed app01 onto `iscsi-ds`, static IP, OpenSSH, logged in over SSH | [SSH login](screenshots/41a-app01-ssh-login.png) · [disk layout](screenshots/41b-app01-lsblk-df.png) |
 
 ---
 
@@ -83,7 +85,7 @@ I built one layer at a time and proved each layer worked before building the nex
 
 | After the bad change | After the restore |
 |---|---|
-| ![after break](44-test1-after-break.png) | ![after revert](46-test1-after-revert-pass.png) |
+| ![after break](screenshots/44-test1-after-break.png) | ![after revert](screenshots/46-test1-after-revert-pass.png) |
 
 **Lesson:** a snapshot is **not** a backup. It lives on the same storage as the VM, so if that storage dies, the snapshot dies too. Snapshots should be kept for days, not weeks.
 
@@ -105,9 +107,9 @@ Then:
 
 | During: DEGRADED | After: ONLINE |
 |---|---|
-| ![degraded](47-test2-degraded.png) | ![online](52-test2-mirror-online-after.png) |
+| ![degraded](screenshots/47-test2-degraded.png) | ![online](screenshots/52-test2-mirror-online-after.png) |
 
-Full `zpool status` output: [51-test2-zpool-replace-log.txt](51-test2-zpool-replace-log.txt) · [ping during the failure](48-test2-ping-during-degraded.png) · [heartbeat log](49-test2-alive-log.png)
+Full `zpool status` output: [51-test2-zpool-replace-log.txt](screenshots/51-test2-zpool-replace-log.txt) · [ping during the failure](screenshots/48-test2-ping-during-degraded.png) · [heartbeat log](screenshots/49-test2-alive-log.png)
 
 ---
 
@@ -134,7 +136,7 @@ sudo midclt call -j pool.create '{"name":"tank","topology":{"data":[{"type":"MIR
 ```
 
 That is acceptable only because these disks are virtual files on one SSD. On real hardware, I would treat that warning as a red flag (cabling or controller problems) and investigate before overriding it.
-[warning](18a-serial-warning-before.png) · [error](19b-pool-error-serials.png) · [pool created](20-pool-created-cli.png)
+[warning](screenshots/18a-serial-warning-before.png) · [error](screenshots/19b-pool-error-serials.png) · [pool created](screenshots/20-pool-created-cli.png)
 
 **2. The disk replacement wouldn’t select the spare in the TrueNAS UI or API.**
 The web page offered no Replace option for the offline disk, and the API returned `Disk 'sdd' not found` even after a disk re-sync. I used ZFS’s native command instead:
@@ -146,7 +148,7 @@ sudo zpool replace tank <offline-member-id> /dev/sdd
 In production I’d follow the vendor’s supported procedure and open a support case if it misbehaved.
 
 **3. ESXi showed the iSCSI disk as “Normal, Degraded.”**
-There was only one network path to the storage. One failed cable or switch would cut it off. In production, the fix is **multipathing**: two or more separate paths. [screenshot](29-esxi-iscsi-device.png)
+There was only one network path to the storage. One failed cable or switch would cut it off. In production, the fix is **multipathing**: two or more separate paths. [screenshot](screenshots/29-esxi-iscsi-device.png)
 
 **4. TrueNAS rolled back my new static IP after 60 seconds.**
 I didn’t confirm the change in time, so TrueNAS reverted it. That is a safety net against locking yourself out. On the second try I opened the new address first and confirmed from there.
